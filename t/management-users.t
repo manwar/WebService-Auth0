@@ -14,20 +14,20 @@ ok my $user_mgmt = WebService::Auth0::Management::Users->new(
 use Devel::Dwarn;
 
 {
-  ok my $f = $user_mgmt->search(q=>'XXXxxXXX123444NEVERFOUNDIHOPE');
+  ok my $f = $user_mgmt->search({q=>'XXXxxXXX123444NEVERFOUNDIHOPE'});
   ok my ($data) = $f->catch(sub {
     fail "Don't expect an error here and now";
   })->get;
-  
+
   is @$data, 0, 'correct number of not founds';
 }
 
 {
-  ok my $f = $user_mgmt->get_all;
+  ok my $f = $user_mgmt->search(+{});
   ok my ($data) = $f->catch(sub {
     fail "Don't expect and error here and now";
   })->get;
-  
+
   ok @$data, 'found some users';
 
   my $last_user_id;
@@ -52,7 +52,7 @@ use Devel::Dwarn;
 
     ok my $f = $user_mgmt->update($last_user_id, \%user_data);
     ok my ($data) = $f->catch(sub {
-      fail "Don't expect an error here and now";
+      fail "Don't expect an error here and now (update)";
     })->get;
 
     is $data->{user_metadata}{opinion}, $opinion, 'got expected opinion';
@@ -68,7 +68,8 @@ use Devel::Dwarn;
 
   ok my $f = $user_mgmt->create(\%user_data);
   ok my ($data) = $f->catch(sub {
-    fail "Don't expect an error here and now";
+    fail "Don't expect an error here and now (create)";
+    Dwarn \@_;
   })->get;
 
   ok $data->{user_id};
@@ -83,9 +84,4 @@ use Devel::Dwarn;
   }
 }
 
-
 done_testing;
-
-__END__
-
-

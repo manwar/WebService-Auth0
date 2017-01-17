@@ -36,9 +36,30 @@ sub PATCH { shift->request(HTTP::Request::Common::request_type_with_data('PATCH'
 
 sub encode_json { shift; JSON::MaybeXS::encode_json(shift) }
 
+sub POST_JSON {
+  my ($self, $uri, $json) = @_;
+  return $self->POST( $uri,
+    'content-type' => 'application/json',
+    Content => $self->encode_json($json));
+}
+
+sub PATCH_JSON {
+  my ($self, $uri, $json) = @_;
+  return $self->PATCH( $uri,
+    'content-type' => 'application/json',
+    Content => $self->encode_json($json));
+}
+
 sub uri_for {
   my $self = shift;
-  my @query = ref($_[-1]||'') eq 'ARRAY' ? @{pop(@_)} : ();
+  my @query = ();
+  if(my $type = ref($_[-1]||'')) {
+    if($type eq 'ARRAY') {
+      @query = @{pop(@_)};
+    } elsif($type eq 'HASH') {
+      @query = %{pop(@_)};
+    }
+  }
   my $uri = URI->new("https://${\$self->domain}/");
   $uri->path_segments(@{$self->mgmt_path_parts}, $self->path_suffix, @_);
   $uri->query_form(@query) if @query;
@@ -53,7 +74,26 @@ WebService::Auth0::Management::Base - Base class for the Management API
 
 =head1 SYNOPSIS
 
+    package WebService::Auth0::Management::Users;
+
+    use Moo;
+    extends 'WebService::Auth0::Management::Base';
+    with 'WebService::Auth0::Management::Role::All',
+      'WebService::Auth0::Management::Role::Search',
+      'WebService::Auth0::Management::Role::Create',
+      'WebService::Auth0::Management::Role::Get',
+      'WebService::Auth0::Management::Role::Update',
+      'WebService::Auth0::Management::Role::Delete'; # Optional helpers
+
+    sub path_suffix { 'users' } # You need to override this
+
+    # Other custom methods for the endpoint.
+
+    1;
+
 =head1 DESCRIPTION
+
+A Base class for managment API endpoints
 
 =head1 METHODS
 
@@ -65,9 +105,17 @@ This class defines the following methods:
 
 =head2 POST
 
+=head2 POST_JSON
+
 =head2 DELETE
 
+=head2 PATCH
+
+=head2 PATCH_JSON
+
 =head2 uri_for
+
+=head2 path_suffix
 
 =head1 ATTRIBUTES
 
