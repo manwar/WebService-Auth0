@@ -5,8 +5,8 @@ use Moo::Role;
 requires 'GET', 'uri_for';
 
 sub search {
-  my ($self, $params) = @_;
-  return $self->GET($self->uri_for($params));
+  my ($self, $query) = @_;
+  return $self->GET($self->uri_for($query));
 }
 
 

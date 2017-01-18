@@ -31,6 +31,7 @@ sub request {
 
 sub GET { shift->request(HTTP::Request::Common::GET @_) }
 sub POST { shift->request(HTTP::Request::Common::POST @_) }
+sub PUT { shift->request(HTTP::Request::Common::PUT @_) }
 sub DELETE { shift->request(HTTP::Request::Common::DELETE @_) }
 sub PATCH { shift->request(HTTP::Request::Common::request_type_with_data('PATCH', @_)) }
 
@@ -39,6 +40,13 @@ sub encode_json { shift; JSON::MaybeXS::encode_json(shift) }
 sub POST_JSON {
   my ($self, $uri, $json) = @_;
   return $self->POST( $uri,
+    'content-type' => 'application/json',
+    Content => $self->encode_json($json));
+}
+
+sub PUT_JSON {
+  my ($self, $uri, $json) = @_;
+  return $self->PUT( $uri,
     'content-type' => 'application/json',
     Content => $self->encode_json($json));
 }
@@ -60,6 +68,7 @@ sub uri_for {
       @query = %{pop(@_)};
     }
   }
+  @query = map { ref($_)||'' eq 'ARRAY' ? join(',', @$_): $_ } @query;
   my $uri = URI->new("https://${\$self->domain}/");
   $uri->path_segments(@{$self->mgmt_path_parts}, $self->path_suffix, @_);
   $uri->query_form(@query) if @query;
