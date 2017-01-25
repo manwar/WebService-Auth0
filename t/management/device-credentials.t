@@ -23,6 +23,12 @@ use Devel::Dwarn;
   is @$data, 0, 'correct number of not founds';
 }
 
+
+
+done_testing;
+
+__END__
+
 {
   ok my $f = $dcreds->create({
     device_name => "ssss",
@@ -39,5 +45,3 @@ use Devel::Dwarn;
 
   Dwarn $data;
 }
-
-done_testing;

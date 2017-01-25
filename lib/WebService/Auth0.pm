@@ -39,95 +39,32 @@ has domain => (
 has client_id => (is=>'ro', predicate=>'has_client_id');
 has client_secret => (is=>'ro', predicate=>'has_client_secret');
 
-has base_uri => (
-  is=>'ro',
-  init_arg=>undef,
-  lazy=>1,
-  required=>1,
-  default=>sub { "https://${\$_[0]->domain}/" } );
-
-has userinfo_uri => (
-  is=>'ro',
-  lazy=>1,
-  required=>1,
-  default=>sub {"${\$_[0]->base_uri}userinfo"});
-
-has token_uri => (
-  is=>'ro',
-  lazy=>1,
-  required=>1,
-  default=>sub {"${\$_[0]->base_uri}oauth/token"});
-
-sub new_authorize_url {
-  my ($self, @q) = @_;
-  my $uri = URI->new("${\$self->base_uri}authorize");
-  $uri->query_form(@q);
-  return $uri;
-}
-
-=head2 authorize_code_grant 
-
-=cut
-
-sub authorize_code_grant {
+sub auth {
   my $self = shift;
-  my %p = validate( @_, {
-    audience => 1,
-    scope => 0,
-    client_id => 0,
-    redirect_uri => 1,
-    state => 0,
-    'additional-parameter' => 0,
-    response_type => {
-      callbacks => {
-        "Must be 'code' or 'token'" => sub {
-          return $_[0] eq 'code' || $_[0] eq 'token';
-        }, 
-      },
-    }
-  });
+  my %args = $_[0] ? ((ref($_[0])||'') eq 'HASH' ? %$_[0] : @_) : ();
 
-  my $uri = $self->new_authorize_url(
+  %args = (
+    ua => $self->ua,
+    domain => $self->domain,
     client_id => $self->client_id,
-    %p);
-  
-  return $self->request(GET "$uri");
-}
-=head2 login_social
+    %args,
+  );
 
-Given parameters return the redirection URL for an authorization
-service.  Returns a L<Future>.
+  $args{client_secret} = $self->client_secret
+    if $self->has_client_secret;
 
-=cut 
-
-sub login_social {
-  my $self = shift;
-  my %p = validate( @_, {
-    connection => 0,
-    client_id => 0,
-    redirect_uri => 1,
-    state => 0,
-    'additional-parameter' => 0,
-    response_type => {
-      callbacks => {
-        "Must be 'code' or 'token'" => sub {
-          return $_[0] eq 'code' || $_[0] eq 'token';
-        }, 
-      },
-    }
-  });
-
-  my $uri = $self->new_authorize_url(
-    client_id => $self->client_id,
-    %p);
-  
-  return $self->request(GET "$uri");
+  return use_module('WebService::Auth0::Authentication')
+    ->new(%args);
 }
 
 
 
 =head1 NAME
 
+
+        ua => $ua,
+      domain => $ENV{AUTH0_DOMAIN},
+      client_id => $ENV{AUTH0_CLIENT_ID} 
 WebService::Auth0 - Access the Auth0 API
 
 =head1 SYNOPSIS

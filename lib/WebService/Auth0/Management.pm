@@ -9,7 +9,8 @@ has domain => (
 
 has token => (
   is=>'ro',
-  required=>1 );
+  predicate=>'has_token',
+  required=>0 );
 
 has ua => (
   is=>'lazy',
@@ -27,13 +28,33 @@ has mgmt_path_parts => (
 
 sub create {
   my ($self, $module, $args) = @_;
-  return use_module(ref($self)."::$module")->new(
+  my %args = (
     domain => $self->domain,
-    token => $self->token,
     ua => $self->ua,
-    %{$args||+{}},
-  );
+    mgmt_path_parts => $self->mgmt_path_parts,
+    %{$args||+{}});
+
+  $args{token} = $self->token if $self->has_token;
+  return use_module(ref($self)."::$module")->new(%args);
 }
+
+sub blacklists { shift->create('Blacklists',@_) }
+sub client_grants { shift->create('ClientGrants',@_) }
+sub clients { shift->create('Clients',@_) }
+sub connections { shift->create('Connections',@_) }
+sub device_credentials { shift->create('DeviceCredentials',@_) }
+sub emails { shift->create('Emails',@_) }
+sub guardian{ shift->create('Guardian',@_) }
+sub jobs { shift->create('Jobs',@_) }
+sub logs { shift->create('Logs',@_) }
+sub resource_servers { shift->create('ResourceServers',@_) }
+sub rules { shift->create('Rules',@_) }
+sub stats { shift->create('Stats',@_) }
+sub template { shift->create('Template',@_) }
+sub tenants { shift->create('Tenants',@_) }
+sub tickets { shift->create('Tickets',@_) }
+sub user_blocks { shift->create('UserBlocks',@_) }
+sub users { shift->create('Users',@_) }
 
 
 =head1 NAME
