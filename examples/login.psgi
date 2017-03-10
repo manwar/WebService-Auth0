@@ -13,31 +13,27 @@ my $login = WebService::Auth0::Authentication->new(
   client_id => $ENV{AUTH0_CLIENT_ID} );
 
 my $app = sub {
-  my $env = shift;
-  if($env->{PATH_INFO} eq '/auth0/callback') {
-    my $req = Plack::Request->new($env);
-    my $future = $login->get_token({
+  my $req = Plack::Request->new(shift);
+  if($req->path_info eq '/auth0/callback') {
+    my ($user_info) = $login->get_token({
       code=>$req->param('code'),
       grant_type=>'authorization_code',
       redirect_uri=>'http://localhost:5000/auth0/callback'
-    });
-    my ($token) = $future->catch(sub {
+    })->catch(sub {
       die "Don't expect and error here and now";
-    })->get;
-
-    {
+    })->then(sub {
+      my $token = shift;
       my $future = $login->userinfo({
-        access_token => $token->{access_token}
-      });
-      my ($user_info) = $future->catch(sub {
+        access_token => $token->{access_token},
+      })->catch(sub {
         die "Don't expect and error here and now";
-      })->get;
-      return [
-        200,
-        ['Content-Type' => 'application/json'],
-        [encode_json ($user_info)]
-      ];
-    }
+      });
+    })->get;
+    return [
+      200,
+      ['Content-Type' => 'application/json'],
+      [encode_json ($user_info)]
+    ];
   } else {
     my $future = $login->authorize({
       redirect_uri=>'http://localhost:5000/auth0/callback',
