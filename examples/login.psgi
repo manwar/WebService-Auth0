@@ -9,8 +9,8 @@ my $ua = WebService::Auth0::UA->create;
 my $login = WebService::Auth0::Authentication->new(
   ua => $ua,
   domain => 'jjn1056.auth0.com',
-  client_secret => 'z6b4FiMxHJtua1_3yO9zDIvQBBM_xWAZeYZOj2e5z5x5uA-_egHjZBOpDUoR54BI',
-  client_id => '1zKhEBtDdR24mWPGs4pKOTtks4nlaHLF' );
+  client_secret => $ENV{AUTH0_SECRET},
+  client_id => $ENV{AUTH0_CLIENT_ID} );
 
 my $app = sub {
   my $env = shift;
