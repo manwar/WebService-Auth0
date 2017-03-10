@@ -1,21 +1,20 @@
 use warnings;
 use strict;
-use WebService::Auth0::UA;
-use WebService::Auth0::Authentication;
+use WebService::Auth0;
 use Plack::Request;
 use JSON::PP;
 
-my $ua = WebService::Auth0::UA->create;
-my $login = WebService::Auth0::Authentication->new(
-  ua => $ua,
+my $auth0 = WebService::Auth0->new(
   domain => 'jjn1056.auth0.com',
   client_secret => $ENV{AUTH0_SECRET},
   client_id => $ENV{AUTH0_CLIENT_ID} );
 
+my $auth = $auth0->auth;
+
 my $app = sub {
   my $req = Plack::Request->new(shift);
   if($req->path_info eq '/auth0/callback') {
-    my ($user_info) = $login->get_token({
+    my ($user_info) = $auth->get_token({
       code=>$req->param('code'),
       grant_type=>'authorization_code',
       redirect_uri=>'http://localhost:5000/auth0/callback'
@@ -23,7 +22,7 @@ my $app = sub {
       die "Don't expect and error here and now";
     })->then(sub {
       my $token = shift;
-      my $future = $login->userinfo({
+      my $future = $auth->userinfo({
         access_token => $token->{access_token},
       })->catch(sub {
         die "Don't expect and error here and now";
@@ -35,15 +34,12 @@ my $app = sub {
       [encode_json ($user_info)]
     ];
   } else {
-    my $future = $login->authorize({
+    my ($location) = $auth->authorize({
       redirect_uri=>'http://localhost:5000/auth0/callback',
       connection=>'google-oauth2',
-      response_type=>'code'});
-
-    my ($location) = $future->catch(sub {
+      response_type=>'code'})->catch(sub {
       die "Don't expect and error here and now";
     })->get;
-
     if($location) {
       return [
         302,
@@ -59,5 +55,3 @@ my $app = sub {
     }
   }
 };
-
-

@@ -1,14 +1,9 @@
 package WebService::Auth0;
 
 use Moo;
-use URI;
 use Module::Runtime qw(use_module);
-use HTTP::Request::Common;
-use Params::Validate;
 
 our $VERSION = '0.001';
-
-has timeout => (is=>'ro', required=>1, default=>10);
 
 has ua_handler_class => (
   is=>'ro',
@@ -18,18 +13,16 @@ has ua_handler_class => (
 has ua_handler_options => (
   is=>'ro',
   required=>1,
-  default=>sub { +{} });
+  default=>sub { [] });
 
 has ua => (
-  is=>'bare',
+  is=>'ro',
   init_arg=>undef,
   lazy=>1,
   required=>1,
-  handles=>['request'],
   default=>sub {
     use_module($_[0]->ua_handler_class)->new(
-      timeout=>$_[0]->timeout,
-      %{$_[0]->ua_handler_options});
+      @{$_[0]->ua_handler_options});
   });
 
 has domain => (
@@ -70,20 +63,14 @@ sub management {
   $args{client_secret} = $self->client_secret
     if $self->has_client_secret;
 
-  return use_module('WebService::Auth0::Authentication')
+  return use_module('WebService::Auth0::Management')
     ->new(%args);
-
-
 }
 
-
+1;
 
 =head1 NAME
 
-
-        ua => $ua,
-      domain => $ENV{AUTH0_DOMAIN},
-      client_id => $ENV{AUTH0_CLIENT_ID} 
 WebService::Auth0 - Access the Auth0 API
 
 =head1 SYNOPSIS
@@ -102,14 +89,41 @@ Prototype for a web service client for L<https://auth0.com>.  This is probably
 going to change a lot as I learn how it actually works.  I wrote this
 primarily as I was doing L<Catalyst::Authentication::Credential::Auth0>
 since it seemed silly to stick web service client stuff directly into
-the Catalyst authorization credential class.  Hopefully this will
-eventually evolve into a true stand alone distribution.  If you use this
-directly please be aware I reserve the right to change it from release
-to release as needed.
+the Catalyst authorization credential class.
+
+=head1 ATTRIBUTES
+
+This class defines the following attributes
+
+=head2 domain
+
+=head2 client_id
+
+=head2 client_secret
+
+Credentials supplied to you from L<https://auth0.com>. 
+
+=head2 ua_handler_class
+
+Defaults to L<WebService::Auth0::UA::LWP>, a blocking user agent based on L<LWP>.
+
+=head2 ua_handler_options
+
+An arrayref of options tht you pass to your L</ua_handler_class>.
 
 =head1 METHODS
 
 This class defines the following methods:
+
+=head2 auth
+
+Factory class that returns an instance of L<WebService::Auth0::Authentication>
+using the current settings.
+
+=head2 management
+
+Factory class that returns an instance of L<WebService::Auth0::Management>
+using the current settings.
 
 =head1 SEE ALSO
  
@@ -127,5 +141,3 @@ This library is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
 
 =cut
-
-1;

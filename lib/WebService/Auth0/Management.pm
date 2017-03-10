@@ -13,12 +13,8 @@ has token => (
   required=>0 );
 
 has ua => (
-  is=>'lazy',
+  is=>'ro',
   required=>1 );
-
-  sub _build_ua {
-    return use_module('WebService::Auth0::UA')->create;
-  }
 
 has mgmt_path_parts => (
   is=>'ro',
@@ -81,17 +77,6 @@ best to play to the standard.
 
 You can also create each Management module standalone.
 
-=head1 METHODS
-
-This class defines the following methods:
-
-=head2 create ($module, \%args)
-
-    my $rules = $mgmt->create('Rules');
-
-Create a module based on the current arguments.  You may pass in override
-arguments as the second argument of this method.
-
 =head1 ATTRIBUTES
 
 This class defines the following attributes:
@@ -103,6 +88,55 @@ This class defines the following attributes:
 =head2 ua
 
 =head2 mgmt_path_parts
+
+=head1 METHODS
+
+This class defines the following methods:
+
+=head2 create ($module, \%args)
+
+    my $rules = $mgmt->create('Rules');
+
+Create a module based on the current arguments.  You may pass in override
+arguments as the second argument of this method.
+
+=head1 PROXY METHODS
+
+The following methods are proxies to create a sub module
+
+=head2 blacklists
+
+=head2 client_grants
+
+=head2 clients
+
+=head2 connections
+
+=head2 device_credentials
+
+=head2 emails
+
+=head2 guardian
+
+=head2 jobs
+
+=head2 logs
+
+=head2 resource_servers
+
+=head2 rules
+
+=head2 stats
+
+=head2 template
+
+=head2 tenants
+
+=head2 tickets
+
+=head2 user_blocks
+
+=head2 users
 
 =head1 SEE ALSO
  

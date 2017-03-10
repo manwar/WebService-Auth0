@@ -261,12 +261,13 @@ L<https://auth0.com/docs/api/authentication#get-user-info>
 
 =cut
 
-use HTTP::Request::Common ();
 sub userinfo {
   my ($self, $params) = @_;
-  my $request = HTTP::Request::Common::GET($self->uri_for('userinfo'));
-  $request->push_header(Authorization => "Bearer ${\$params->{access_token}}");
-  return $self->request($request);
+  die "'access_token' is a required parameter" unless $params->{access_token};
+  return $self->GET(
+    $self->uri_for('userinfo'),
+    Authorization => "Bearer ${\$params->{access_token}}",
+  );
 }
 
 =head2 tokeninfo
