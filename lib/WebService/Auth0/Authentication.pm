@@ -166,6 +166,7 @@ L<https://auth0.com/docs/api/authentication?http#get-token>
 =cut
 
 sub get_token {
+  my ($self, $params) = @_;
   die "method requires 'client_secret'" unless $self->has_client_secret;
   $params->{client_id} = $self->client_id;
   $params->{client_secret} = $self->client_secret;
@@ -235,7 +236,7 @@ L<https://auth0.com/docs/api/authentication#idp-initiated-sso-flow>
 
 sub initiated_sso_flow {
   my ($self, $params) = @_;
-  return $self->POST_JSON($self->uri_for('login', 'callback'), $param);
+  return $self->POST_JSON($self->uri_for('login', 'callback'), $params);
 }
 
 =head2 passwordless_start
@@ -260,9 +261,12 @@ L<https://auth0.com/docs/api/authentication#get-user-info>
 
 =cut
 
+use HTTP::Request::Common ();
 sub userinfo {
   my ($self, $params) = @_;
-  return $self->GET($self->uri_for('userinfo'), $params);
+  my $request = HTTP::Request::Common::GET($self->uri_for('userinfo'));
+  $request->push_header(Authorization => "Bearer ${\$params->{access_token}}");
+  return $self->request($request);
 }
 
 =head2 tokeninfo
