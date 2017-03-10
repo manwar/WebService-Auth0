@@ -57,6 +57,25 @@ sub auth {
     ->new(%args);
 }
 
+sub management {
+  my $self = shift;
+  my %args = $_[0] ? ((ref($_[0])||'') eq 'HASH' ? %$_[0] : @_) : ();
+
+  %args = (
+    ua => $self->ua,
+    domain => $self->domain,
+    %args,
+  );
+
+  $args{client_secret} = $self->client_secret
+    if $self->has_client_secret;
+
+  return use_module('WebService::Auth0::Authentication')
+    ->new(%args);
+
+
+}
+
 
 
 =head1 NAME
