@@ -1,17 +1,12 @@
 use Test::Most;
-use WebService::Auth0::UA;
 use WebService::Auth0::Management::Users;
 
 plan skip_all => 'Missing AUTH0_DOMAIN and AUTH0_TOKEN'
  unless $ENV{AUTH0_DOMAIN} and $ENV{AUTH0_TOKEN};
 
-ok my $ua = WebService::Auth0::UA->create;
 ok my $user_mgmt = WebService::Auth0::Management::Users->new(
-  ua => $ua,
   domain => $ENV{AUTH0_DOMAIN},
   token => $ENV{AUTH0_TOKEN} );
-
-use Devel::Dwarn;
 
 {
   ok my $f = $user_mgmt->search({q=>'XXXxxXXX123444NEVERFOUNDIHOPE'});
@@ -69,7 +64,6 @@ use Devel::Dwarn;
   ok my $f = $user_mgmt->create(\%user_data);
   ok my ($data) = $f->catch(sub {
     fail "Don't expect an error here and now (create)";
-    Dwarn \@_;
   })->get;
 
   ok $data->{user_id};

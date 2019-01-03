@@ -1,15 +1,12 @@
 use Test::Most;
-use WebService::Auth0::UA;
-use WebService::Auth0::Authentication::Login;
+use WebService::Auth0;
 
 plan skip_all => 'Missing AUTH0_DOMAIN and AUTH0_CLIENT_ID'
  unless $ENV{AUTH0_DOMAIN} and $ENV{AUTH0_CLIENT_ID};
 
-ok my $ua = WebService::Auth0::UA->create;
-ok my $login = WebService::Auth0::Authentication::Login->new(
-  ua => $ua,
+ok my $login = WebService::Auth0->new(
   domain => $ENV{AUTH0_DOMAIN},
-  client_id => $ENV{AUTH0_CLIENT_ID} );
+  client_id => $ENV{AUTH0_CLIENT_ID} )->auth;
 
 {
   ok my $f = $login->authorize({
@@ -18,12 +15,10 @@ ok my $login = WebService::Auth0::Authentication::Login->new(
     response_type=>'code'});
 
   my ($location) = $f->catch(sub {
-    use Devel::Dwarn; Dwarn @_;
     fail "Don't expect and error here and now";
   })->get;
 
   ok $location;
-  warn $location;
 }
 
 {
@@ -34,11 +29,9 @@ ok my $login = WebService::Auth0::Authentication::Login->new(
     grant_type => 'password'});
 
   my ($data) = $f->catch(sub {
-    use Devel::Dwarn; Dwarn @_;
     fail "Don't expect and error here and now";
   })->get;
 
-  use Devel::Dwarn; Dwarn $data;
 }
 
 done_testing;

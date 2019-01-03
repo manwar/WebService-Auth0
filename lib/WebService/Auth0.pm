@@ -85,6 +85,10 @@ WebService::Auth0 - Access the Auth0 API
 
 =head1 DESCRIPTION
 
+B<NOTE> WARNING!  This is an early release with hardly any tests.  If you use
+this you should be willing / able to help me hack on it as needed.  I currently
+reserve the right to make breaking changes as needed.
+
 Prototype for a web service client for L<https://auth0.com>.  This is probably
 going to change a lot as I learn how it actually works.  I wrote this
 primarily as I was doing L<Catalyst::Authentication::Credential::Auth0>
